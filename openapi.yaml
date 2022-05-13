@@ -1,0 +1,427 @@
+openapi: 3.0.0
+info:
+  version: 0.0.1
+  title: Someshop
+  description: Shop of some spots, IDK.
+servers:
+  - url: 'http://localhost:8080'
+paths:
+  /auth/register:
+    post:
+      summary: Register User
+      description: Register new user with given login and password and generating JWT for authentification.
+      operationId: register
+      requestBody:
+        description: AuthData to register
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthData'
+            examples:
+              AuthData:
+                summary: An example of a AuthData
+                value:
+                  name: ejiek
+                  password: krolik
+      responses:
+        '201':
+          description: User has been registered and JWT has been generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccess'
+        '400':
+          description: Login or password is blank.
+        '409':
+          description: This name is already taken.
+        '500':
+          description: User is not registered.
+  /auth/login:
+    post:
+      summary: Login User
+      description: Login existing user with given login and password and generating JWT for authentification.
+      operationId: login
+      requestBody:
+        description: AuthData to login.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthData'
+            examples:
+              AuthData:
+                summary: An example of a AuthData
+                value:
+                  name: ejiek
+                  password: krolik
+      responses:
+        '200':
+          description: User has been logged in and JWT has been generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccess'
+        '400':
+          description: Login or password is blank.
+        '403':
+          description: Incorrect username or password.
+  /spot/all:
+    get:
+      summary: Get all spots
+      description: Get info about each spot.
+      operationId: allSpots
+      responses:
+        '200':
+          description: Array of spots.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spots'
+  /spot/byName/{name}:
+    parameters:
+      -   name: name
+          in: path
+          required: true
+          description: User identifier, as spotName.
+          schema:
+            type: string
+    get:
+      summary: Get spot by name
+      description: Get info about spot by given name parameter.
+      operationId: spotByName
+      responses:
+        '200':
+          description: Spot with given name.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spot'
+        '400':
+          description: Name parameter is not specified.
+        '404':
+          description: Spot with specified name is not found.
+  /spot/byId/{id}:
+    parameters:
+      -   name: id
+          in: path
+          required: true
+          description: User identifier, as spotId.
+          schema:
+            type: integer
+    get:
+      summary: Get spot by id
+      description: Get info about spot by given id parameter.
+      operationId: spotByName
+      responses:
+        '200':
+          description: Spot with given id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spot'
+        '400':
+          description: Id parameter is not specified or not integer.
+        '404':
+          description: Spot with specified id is not found.
+  /spot/my:
+    get:
+      summary: Get spots of logged in user.
+      description: Get info about all spots of the current user.
+      operationId: mySpots
+      responses:
+        '200':
+          description: Array of spots of current user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spots'
+        '401':
+          description: Authorization required.
+      security:
+        - jwtAuth: []
+  /spot/add:
+    post:
+      summary: Add new spot.
+      description: Add new spot with specified draft for the current user.
+      operationId: addSpot
+      requestBody:
+        description: Draft of Spot.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpotDraft'
+            examples:
+              SpotDraft:
+                summary: An example of a SpotDraft
+                value:
+                  name: Polytech
+                  cost: 3.14
+                  quantity: 16
+      responses:
+        '200':
+          description: New Spot added.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spot'
+        '400':
+          description: Incorrect Spot draft.
+        '401':
+          description: Authorization required.
+        '500':
+          description: Spot adding error.
+      security:
+        - jwtAuth: []
+  /user/all:
+    get:
+      summary: Get all users
+      description: Get info about every user (without password).
+      operationId: allUsers
+      responses:
+        '200':
+          description: Array of Spots.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spots'
+  /user/byName/{name}:
+    parameters:
+      -   name: name
+          in: path
+          required: true
+          description: User identifier, as userName.
+          schema:
+            type: integer
+    get:
+      summary: Get user by name
+      description: Get info about user with specified name (without password).
+      operationId: userByName
+      responses:
+        '200':
+          description: User with given name.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Name parameter is not specified.
+        '404':
+          description: User with specified name is not found.
+  /user/byId/{id}:
+    parameters:
+      -   name: id
+          in: path
+          required: true
+          description: User identifier, as userId.
+          schema:
+            type: integer
+    get:
+      summary: Get user by id
+      description: Get info about user with specified id (without password).
+      operationId: userById
+      responses:
+        '200':
+          description: User with given id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Id parameter is not specified or not integer.
+        '404':
+          description: User with specified id is not found.
+  /user/me:
+    get:
+      summary: Get current user
+      description: Get AuthData of current user.
+      operationId: currentUser
+      responses:
+        '200':
+          description: AuthData of current user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthData'
+        '401':
+          description: Authorization required.
+      security:
+        - jwtAuth: []
+    put:
+      summary: Update current user
+      description: Update AuthData of current user.
+      operationId: updateUser
+      requestBody:
+        description: AuthData to update.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthData'
+            examples:
+              AuthData:
+                summary: An example of a AuthData
+                value:
+                  name: sova
+                  password: bear
+      responses:
+        '200':
+          description: AuthData updated seccessfully and new JWT generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccess'
+        '400':
+          description: New AuthData is incorrect
+        '401':
+          description: Authorization required.
+        '500':
+          description: User updating error.
+      security:
+        - jwtAuth: []
+  /transaction/my:
+    get:
+      summary: Get transactions of current user
+      description: Get transactions transactions owned by the logged in user.
+      operationId: myTransactions
+      responses:
+        '200':
+          description: Array of transactions of current user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transactions'
+        '401':
+          description: Authorization required.
+      security:
+        - jwtAuth: []
+  /transaction/buy:
+    post:
+      summary: Add transaction
+      description: Adding new purchase confirmation of spot transaction by specified draft.
+      operationId: addTransaction
+      requestBody:
+        description: TransactionDraft to adding.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionDraft'
+            examples:
+              TransactionDraft:
+                description: An example of a TransactionDraft.
+                value:
+                  spotId: 1
+                  quantity: 28
+      responses:
+        '200':
+          description: Transaction added successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Incorrect Transaction draft.
+        '401':
+          description: Authorization required.
+        '500':
+          description: Transaction adding error.
+      security:
+        - jwtAuth: []
+components:
+  schemas:
+    AuthData:
+      type: object
+      required:
+        - name
+        - password
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+    AuthSuccess:
+      type: object
+      required:
+        - jwtToken
+      properties:
+        jwtToken:
+          type: string
+    User:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Users:
+      type: array
+      items:
+        $ref: '#/components/schemas/User'
+    Spot:
+      type: object
+      required:
+        - id
+        - name
+        - cost
+        - quantity
+        - sellerId
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        cost:
+          type: number
+        quantity:
+          type: integer
+        sellerId:
+          type: integer
+    Spots:
+      type: array
+      items:
+        $ref: '#/components/schemas/Spot'
+    SpotDraft:
+      type: object
+      required:
+        - name
+        - cost
+        - quantity
+      properties:
+        name:
+          type: string
+        cost:
+          type: number
+        quantity:
+          type: integer
+    Transaction:
+      type: object
+      required:
+        - customerId
+        - spotId
+        - quantity
+      properties:
+        customerId:
+          type: integer
+        spotId:
+          type: integer
+        quantity:
+          type: integer
+    Transactions:
+      type: array
+      items:
+        $ref: '#/components/schemas/Transaction'
+    TransactionDraft:
+      type: object
+      required:
+        - spotId
+        - quantity
+      properties:
+        spotId:
+          type: integer
+        quantity:
+          type: integer
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
